@@ -1,0 +1,38 @@
+name: Build Android Debug APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Restore
+        run: dotnet restore src/ZReader/ZReader.csproj
+
+      - name: Run core tests
+        run: dotnet test tests/ZReader.Core.Tests/ZReader.Core.Tests.csproj --no-restore
+
+      - name: Build Debug APK
+        run: dotnet publish src/ZReader/ZReader.csproj -f net10.0-android -c Debug --no-restore -p:AndroidPackageFormats=apk
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: zreader-debug-apk
+          path: src/ZReader/bin/Debug/net10.0-android/publish/*.apk
+          if-no-files-found: error

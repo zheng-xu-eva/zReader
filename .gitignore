@@ -3,3 +3,10 @@
 ################################################################################
 
 /.vs
+# .NET and Visual Studio build output
+bin/
+obj/
+.vs/
+
+# Local Android SDK used only by command-line builds
+.android-sdk/

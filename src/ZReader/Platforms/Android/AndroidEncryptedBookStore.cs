@@ -16,10 +16,6 @@ namespace ZReader.Platforms.Android;
 public sealed class AndroidEncryptedBookStore : IEncryptedBookStore
 {
     private const string KeyAlias = "zreader-book-content-key-v1";
-    // Android KeyProperties.PURPOSE_ENCRYPT and PURPOSE_DECRYPT are integer bit flags.
-    // .NET Android 36 does not expose these two constants in its managed binding.
-    private const int PurposeEncrypt = 1;
-    private const int PurposeDecrypt = 2;
     private static readonly byte[] Magic = "ZRBK"u8.ToArray();
     private readonly string _storageRoot;
 
@@ -103,7 +99,7 @@ public sealed class AndroidEncryptedBookStore : IEncryptedBookStore
         var generator = KeyGenerator.GetInstance(KeyProperties.KeyAlgorithmAes, "AndroidKeyStore");
         using var specification = new KeyGenParameterSpec.Builder(
                 KeyAlias,
-                PurposeEncrypt | PurposeDecrypt)
+                KeyStorePurpose.Encrypt | KeyStorePurpose.Decrypt)
             .SetBlockModes(KeyProperties.BlockModeGcm)
             .SetEncryptionPaddings(KeyProperties.EncryptionPaddingNone)
             .SetKeySize(256)

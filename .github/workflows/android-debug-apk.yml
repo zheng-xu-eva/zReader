@@ -24,6 +24,9 @@ jobs:
       - name: Restore
         run: dotnet restore src/ZReader/ZReader.csproj
 
+      - name: Restore core tests
+        run: dotnet restore tests/ZReader.Core.Tests/ZReader.Core.Tests.csproj
+
       - name: Run core tests
         run: dotnet test tests/ZReader.Core.Tests/ZReader.Core.Tests.csproj --no-restore
 

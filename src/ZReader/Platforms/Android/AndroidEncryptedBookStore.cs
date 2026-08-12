@@ -5,6 +5,7 @@ using Java.Security;
 using Javax.Crypto;
 using Javax.Crypto.Spec;
 using ZReader.Core.Services;
+using JavaCipherMode = Javax.Crypto.CipherMode;
 
 namespace ZReader.Platforms.Android;
 
@@ -15,6 +16,10 @@ namespace ZReader.Platforms.Android;
 public sealed class AndroidEncryptedBookStore : IEncryptedBookStore
 {
     private const string KeyAlias = "zreader-book-content-key-v1";
+    // Android KeyProperties.PURPOSE_ENCRYPT and PURPOSE_DECRYPT are integer bit flags.
+    // .NET Android 36 does not expose these two constants in its managed binding.
+    private const int PurposeEncrypt = 1;
+    private const int PurposeDecrypt = 2;
     private static readonly byte[] Magic = "ZRBK"u8.ToArray();
     private readonly string _storageRoot;
 
@@ -32,7 +37,7 @@ public sealed class AndroidEncryptedBookStore : IEncryptedBookStore
 
         var key = GetOrCreateKey();
         using var cipher = Cipher.GetInstance("AES/GCM/NoPadding");
-        cipher.Init(CipherMode.EncryptMode, key);
+        cipher.Init(JavaCipherMode.EncryptMode, key);
         var encryptedBytes = cipher.DoFinal(Encoding.UTF8.GetBytes(content));
         var nonce = cipher.GetIV();
         var payload = new byte[6 + nonce.Length + encryptedBytes.Length];
@@ -65,7 +70,7 @@ public sealed class AndroidEncryptedBookStore : IEncryptedBookStore
         {
             using var cipher = Cipher.GetInstance("AES/GCM/NoPadding");
             using var parameters = new GCMParameterSpec(128, nonce);
-            cipher.Init(CipherMode.DecryptMode, GetOrCreateKey(), parameters);
+            cipher.Init(JavaCipherMode.DecryptMode, GetOrCreateKey(), parameters);
             return new UTF8Encoding(false, true).GetString(cipher.DoFinal(ciphertext));
         }
         catch (Javax.Crypto.AEADBadTagException exception)
@@ -98,7 +103,7 @@ public sealed class AndroidEncryptedBookStore : IEncryptedBookStore
         var generator = KeyGenerator.GetInstance(KeyProperties.KeyAlgorithmAes, "AndroidKeyStore");
         using var specification = new KeyGenParameterSpec.Builder(
                 KeyAlias,
-                KeyProperties.PurposeEncrypt | KeyProperties.PurposeDecrypt)
+                PurposeEncrypt | PurposeDecrypt)
             .SetBlockModes(KeyProperties.BlockModeGcm)
             .SetEncryptionPaddings(KeyProperties.EncryptionPaddingNone)
             .SetKeySize(256)

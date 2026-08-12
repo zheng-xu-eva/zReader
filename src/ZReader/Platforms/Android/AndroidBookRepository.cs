@@ -25,7 +25,7 @@ public sealed class AndroidBookRepository : IBookRepository
         database.BeginTransaction();
         try
         {
-            using var values = new ContentValues();
+            using var values = new global::Android.Content.ContentValues();
             values.Put("Title", draft.Title);
             values.Put("SourceFileName", draft.SourceFileName);
             values.Put("EncryptedRelativePath", draft.EncryptedRelativePath);
@@ -98,7 +98,7 @@ public sealed class AndroidBookRepository : IBookRepository
         try
         {
             InsertOrUpdateState(database, state, isUpdate: true);
-            using var bookValues = new ContentValues();
+            using var bookValues = new global::Android.Content.ContentValues();
             bookValues.Put("LastReadAt", state.UpdatedAt.ToString("O"));
             database.Update("Books", bookValues, "Id = ?", [state.BookId.ToString()]);
             database.SetTransactionSuccessful();
@@ -112,7 +112,7 @@ public sealed class AndroidBookRepository : IBookRepository
 
     private static void InsertOrUpdateState(SQLiteDatabase database, ReadingState state, bool isUpdate)
     {
-        using var values = new ContentValues();
+        using var values = new global::Android.Content.ContentValues();
         values.Put("BookId", state.BookId); values.Put("CharacterOffset", state.CharacterOffset);
         values.Put("FontSize", state.FontSize); values.Put("LineSpacing", state.LineSpacing);
         values.Put("Theme", (int)state.Theme); values.Put("UpdatedAt", state.UpdatedAt.ToString("O"));
@@ -128,7 +128,7 @@ public sealed class AndroidBookRepository : IBookRepository
 
     private sealed class ReaderDatabase : SQLiteOpenHelper
     {
-        public ReaderDatabase() : base(Android.App.Application.Context, "zreader.db", null, 1) { }
+        public ReaderDatabase() : base(global::Android.App.Application.Context, "zreader.db", null, 1) { }
 
         public override void OnCreate(SQLiteDatabase database)
         {
